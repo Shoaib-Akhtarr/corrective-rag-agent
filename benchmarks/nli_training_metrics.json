@@ -1,0 +1,90 @@
+{
+  "model": "PyTorch Siamese+Cross-Interaction NLI MLP (256->128->3, AdamW + CosineAnnealingLR)",
+  "total_pairs": 1500,
+  "train_val_test_split": [
+    1050,
+    225,
+    225
+  ],
+  "epochs": 60,
+  "best_val_accuracy": 1.0,
+  "test_accuracy": 1.0,
+  "test_macro_f1": 1.0,
+  "confusion_matrix": [
+    [
+      75,
+      0,
+      0
+    ],
+    [
+      0,
+      75,
+      0
+    ],
+    [
+      0,
+      0,
+      75
+    ]
+  ],
+  "classification_report": {
+    "ENTAILMENT": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 75.0
+    },
+    "CONTRADICTION": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 75.0
+    },
+    "NEUTRAL": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 75.0
+    },
+    "accuracy": 1.0,
+    "macro avg": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 225.0
+    },
+    "weighted avg": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 225.0
+    }
+  },
+  "loss_history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.1487,
+      "val_acc": 0.9956
+    },
+    {
+      "epoch": 15,
+      "train_loss": 0.0004,
+      "val_acc": 1.0
+    },
+    {
+      "epoch": 30,
+      "train_loss": 0.0001,
+      "val_acc": 1.0
+    },
+    {
+      "epoch": 45,
+      "train_loss": 0.0002,
+      "val_acc": 1.0
+    },
+    {
+      "epoch": 60,
+      "train_loss": 0.0002,
+      "val_acc": 1.0
+    }
+  ]
+}

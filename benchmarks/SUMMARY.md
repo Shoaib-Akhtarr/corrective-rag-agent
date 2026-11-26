@@ -1,8 +1,8 @@
-# Corrective RAG Ablation Report
+# Temporal & Contradiction-Aware Claim-Diff RAG Benchmark
 
-- **Corpus:** 50 documents | **Queries:** 8
-
-| Method | Multi-Hop Recall | Distractor Rejection | Faithfulness |
-|---|---:|---:|---:|
-| Naive TF-IDF Top-5 (No Grader, No Multi-Hop) | 87.1% | 92.9% | N/A |
-| BM25 + Multi-Hop Entity Decomposer + Trained ML Distractor Grader | 100.0% | 100.0% | 100.0% |
+- **Ingested PDFs:** 8 multi-page PDFs (12 chunks)
+- **PyTorch NLI Contradiction Model:** Test Accuracy = **1.0**, Macro-F1 = **1.0** (1,500 pairs)
+- **Authoritative Doc Recall:** **100.0%**
+- **Contradiction Detection Rate:** **100.0%**
+- **Distractor Rejection Rate:** **100.0%**
+- **Grounding Faithfulness:** **100.0%**

@@ -1,70 +1,54 @@
 import os
 import sys
+import pandas as pd
 import streamlit as st
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app.graph.crag_workflow import crag_agent
-from app.retrieval.store import store
-from app.evaluate import run_benchmark
+from app.retrieval.hybrid_index import hybrid_index
 
-st.set_page_config(page_title="Corrective RAG (CRAG) Agent", page_icon="🛡️", layout="wide")
-st.title("🛡️ Self-Reflective Corrective RAG (CRAG) Agent")
-st.caption("Multi-Hop Entity Decomposition · Adversarial Distractor Rejection · Hallucination Verification")
+st.set_page_config(page_title="Temporal Claim-Diff RAG", page_icon="⏳", layout="wide")
+st.title("⏳ Temporal & Contradiction-Aware Claim-Diff RAG")
+st.caption("Real PDF/MD/TXT Ingestion · PyTorch Neural NLI Contradiction Detection · Authority + Date Conflict Resolution")
 
 with st.sidebar:
-    st.header("Corpus & Benchmark")
-    st.metric("Indexed Documents", len(store.documents))
-    st.metric("Benchmark Queries", len(store.benchmark_queries))
-    if st.button("Run Full CRAG Benchmark", use_container_width=True):
-        with st.spinner("Running MultiHop-RAG benchmark..."):
-            report = run_benchmark()
-        st.success("Benchmark Complete")
-        st.metric("Multi-Hop Doc Recall", f"{report['multi_hop_doc_recall']}%")
-        st.metric("Distractor Rejection", f"{report['distractor_rejection_rate']}%")
-        st.metric("Faithfulness", f"{report['grounding_faithfulness']}%")
-        st.metric("Avg Latency", f"{report['avg_latency_ms']} ms")
+    st.header("Ingest Real Documents")
+    uploaded = st.file_uploader("Upload PDF, Markdown, or TXT", type=["pdf", "md", "txt"], accept_multiple_files=True)
+    if uploaded:
+        for uf in uploaded:
+            added = hybrid_index.ingest_bytes(uf.name, uf.read())
+            st.success(f"Indexed `{uf.name}` ({added} chunks)")
 
-preset_queries = [q["query"] for q in store.benchmark_queries]
-selected_preset = st.selectbox("Choose a Multi-Hop Benchmark Query:", ["Custom..."] + preset_queries)
-query = st.text_area(
-    "Enter your multi-hop query:",
-    value=preset_queries[0] if selected_preset == "Custom..." else selected_preset,
-    height=80,
-)
+    docs_count = len({c["doc_id"] for c in hybrid_index.chunks})
+    st.metric("Documents Indexed", docs_count)
+    st.metric("Total Page Chunks", len(hybrid_index.chunks))
 
-if st.button("Run Corrective RAG Pipeline", type="primary"):
+presets = [
+    "What is the current default vector storage layer in eu-central-2, and which earlier policy did it supersede?",
+    "Who authorizes HelixDB encryption key rotations in eu-central-2, and is the chair compliant with EMA DORA?",
+    "What GPU unit threshold triggers SLA penalty credits for Meridian AI Labs, and what credit was issued?",
+    "Does Apex Cloud Infrastructure have legal liability for Luminos Labs' patents?",
+]
+chosen = st.selectbox("Sample Contradiction / Multi-Hop Query:", presets)
+query = st.text_area("Query across ingested documents:", value=chosen, height=80)
+
+if st.button("Run Claim-Diff Pipeline", type="primary"):
     state = crag_agent.run(query)
+    diff = state["claim_diff"]
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Hops Executed", state["hop_count"])
-    c2.metric("Verified Docs", len(state["graded_docs"]))
-    c3.metric("Distractors Rejected", len(state["rejected_distractors"]))
-    c4.metric("Faithfulness", f"{state['faithfulness_score'] * 100:.0f}%")
+    c1.metric("Verified Chunks", len(state["graded_docs"]))
+    c2.metric("Distractors Rejected", len(state["rejected_distractors"]))
+    c3.metric("Contradictions Resolved", diff["contradictions_detected"])
+    c4.metric("Grounded", "YES" if state["is_grounded"] else "NO")
 
-    if state["is_grounded"]:
-        st.success("Hallucination Gate: GROUNDED (all citations verified)")
-    else:
-        st.error("Hallucination Gate: UNGROUNDED")
-
-    st.subheader("Synthesized Answer")
     st.markdown(state["draft_answer"])
 
-    col_left, col_right = st.columns(2)
-    with col_left:
-        st.subheader("Verified Supporting Documents")
-        for doc in state["graded_docs"]:
-            with st.expander(f"[{doc['doc_id']}] {doc['title']} ({doc['category']})"):
-                st.write(doc["content"])
+    if diff["claim_lineage_diff"]:
+        st.subheader("Claim Lineage Diff (Truth-Decay Audit)")
+        st.dataframe(pd.DataFrame(diff["claim_lineage_diff"]), use_container_width=True)
 
-    with col_right:
-        st.subheader("Rejected Adversarial Distractors")
-        if state["rejected_distractors"]:
-            for did in state["rejected_distractors"]:
-                st.warning(f"Rejected `{did}` (domain mismatch / distractor)")
-        else:
-            st.info("No distractors triggered in top-k candidates.")
-
-        st.subheader("Audit Trail")
+    with st.expander("Pipeline Audit Trail"):
         for step in state["audit_trail"]:
             st.code(step, language="text")

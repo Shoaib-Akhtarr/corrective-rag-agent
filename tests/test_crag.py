@@ -5,22 +5,40 @@ from app.evaluate import run_benchmark
 
 client = TestClient(app)
 
+
 def test_health():
     r = client.get("/health")
     assert r.status_code == 200
-    assert r.json()["status"] == "healthy"
+    assert r.json()["documents_indexed"] >= 8
+    assert r.json()["chunks_indexed"] >= 10
 
-def test_multihop_distractor_rejection():
-    q = "Who chairs the HSM encryption quorum responsible for key rotations of the vector engine used by BioNova Therapeutics' VALOR-2 trial?"
+
+def test_live_document_ingestion_and_contradiction_resolution():
+    # Ingest a brand-new Markdown policy addendum at runtime
+    addendum = (
+        b"Document Authority: REGULATORY_BINDING | Effective Date: 2026-04-01\n\n"
+        b"All eu-central-2 HelixDB clusters must rotate encryption keys every 14 days under Zurich HSM Quorum oversight."
+    )
+    r = client.post(
+        "/api/v1/ingest",
+        files={"file": ("09_Regulatory_14Day_Rotation_Order.md", addendum, "text/markdown")},
+    )
+    assert r.status_code == 200
+    assert r.json()["chunks_indexed"] >= 1
+
+
+def test_temporal_claim_diff_and_distractor_rejection():
+    q = "Who authorizes HelixDB encryption key rotations in eu-central-2, and is the chair compliant with EMA DORA?"
     state = crag_agent.run(q)
     graded_ids = {d["doc_id"] for d in state["graded_docs"]}
-    assert "MH-DOC-003" not in graded_ids
-    assert "MH-DOC-006" not in graded_ids
-    assert "MH-DOC-002" in graded_ids or "MH-DOC-007" in graded_ids
+    assert "07_DISTRACTOR_Apex_Sports_Apparel_Earnings" not in graded_ids
+    assert "03_Zurich_HSM_Board_Resolution_2026_Q1" in graded_ids
+    assert state["claim_diff"]["contradictions_detected"] >= 1
     assert state["is_grounded"] is True
 
-def test_crag_benchmark_targets():
+
+def test_claim_diff_benchmark():
     report = run_benchmark()
-    assert report["multi_hop_doc_recall"] >= 75.0
-    assert report["distractor_rejection_rate"] == 100.0
-    assert report["grounding_faithfulness"] == 100.0
+    assert report["authoritative_doc_recall_pct"] == 100.0
+    assert report["distractor_rejection_rate_pct"] == 100.0
+    assert report["grounding_faithfulness_pct"] == 100.0

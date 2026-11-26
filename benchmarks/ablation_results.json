@@ -1,16 +1,21 @@
 {
-  "corpus_docs": 50,
-  "benchmark_queries": 8,
-  "baseline_naive_tfidf": {
-    "method": "Naive TF-IDF Top-5 (No Grader, No Multi-Hop)",
-    "multi_hop_doc_recall_pct": 87.1,
-    "distractor_rejection_rate_pct": 92.9
+  "pdf_corpus": {
+    "documents_indexed": 8,
+    "chunks_indexed": 12
   },
-  "crag_multihop_ml_grader": {
-    "method": "BM25 + Multi-Hop Entity Decomposer + Trained ML Distractor Grader",
-    "multi_hop_doc_recall_pct": 100.0,
+  "pytorch_nli_model": {
+    "test_accuracy": 1.0,
+    "test_macro_f1": 1.0,
+    "total_pairs": 1500
+  },
+  "claim_diff_rag_benchmark": {
+    "documents_indexed": 8,
+    "chunks_indexed": 12,
+    "queries_evaluated": 3,
+    "authoritative_doc_recall_pct": 100.0,
+    "contradiction_detection_rate_pct": 100.0,
     "distractor_rejection_rate_pct": 100.0,
     "grounding_faithfulness_pct": 100.0,
-    "avg_latency_ms": 61.95
+    "avg_latency_ms": 124.54
   }
 }
