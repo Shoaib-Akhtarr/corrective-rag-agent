@@ -1,6 +1,15 @@
+import os
 import re
+import joblib
 from typing import TypedDict, List, Dict, Any, Optional
 from app.retrieval.store import store
+
+_GRADER_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    "artifacts",
+    "distractor_grader.joblib",
+)
+_ML_GRADER = joblib.load(_GRADER_PATH) if os.path.exists(_GRADER_PATH) else None
 
 class CRAGState(TypedDict):
     query: str
@@ -44,13 +53,19 @@ class CorrectiveRAGAgent:
             content = doc["content"].lower()
             is_distractor = False
 
-            # Explicit distractor detection via domain mismatch
+            # Explicit distractor detection via trained ML classifier + domain mismatch
             if "distractor:" in title.lower():
                 is_distractor = True
             elif "sports apparel" in content and "cloud" in query_lower:
                 is_distractor = True
             elif "maritime shipping" in content and ("ai" in query_lower or "semiconductor" in query_lower or "cowos" in query_lower):
                 is_distractor = True
+            elif _ML_GRADER is not None:
+                clean_title = title.replace("DISTRACTOR: ", "")
+                doc_text = f"{clean_title}. {doc.get('category', '')}. {doc['content']}"
+                signal_prob = float(_ML_GRADER.predict_proba([doc_text])[0][1])
+                if signal_prob < 0.35:
+                    is_distractor = True
 
             if is_distractor:
                 rejected.append(doc["doc_id"])

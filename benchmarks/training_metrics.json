@@ -1,0 +1,49 @@
+{
+  "model": "TfidfVectorizer + LogisticRegression (balanced)",
+  "total_samples": 50,
+  "signal_docs": 35,
+  "distractor_docs": 15,
+  "cv_5fold_accuracy_mean": 0.72,
+  "cv_5fold_accuracy_std": 0.04,
+  "cv_5fold_f1_mean": 0.8338,
+  "train_accuracy": 1.0,
+  "train_f1": 1.0,
+  "confusion_matrix": [
+    [
+      15,
+      0
+    ],
+    [
+      0,
+      35
+    ]
+  ],
+  "classification_report": {
+    "distractor": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 15.0
+    },
+    "signal": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 35.0
+    },
+    "accuracy": 1.0,
+    "macro avg": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 50.0
+    },
+    "weighted avg": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 50.0
+    }
+  },
+  "artifact_path": "artifacts/distractor_grader.joblib"
+}
