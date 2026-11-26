@@ -5,3 +5,5 @@ __pycache__/
 venv/
 .pytest_cache/
 *.log
+artifacts/qdrant_storage/
+artifacts/llm_traces.jsonl

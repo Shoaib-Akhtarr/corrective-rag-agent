@@ -17,9 +17,11 @@ def main():
             "chunks_indexed": report["chunks_indexed"],
         },
         "pytorch_nli_model": {
+            "datasets": nli_metrics.get("datasets", []),
+            "test_pairs": nli_metrics.get("test_pairs"),
             "test_accuracy": nli_metrics["test_accuracy"],
             "test_macro_f1": nli_metrics["test_macro_f1"],
-            "total_pairs": nli_metrics["total_pairs"],
+            "contractnli_test_accuracy": nli_metrics.get("contractnli_test_accuracy"),
         },
         "claim_diff_rag_benchmark": report,
     }
@@ -28,8 +30,10 @@ def main():
 
     md = (
         "# Temporal & Contradiction-Aware Claim-Diff RAG Benchmark\n\n"
-        f"- **Ingested PDFs:** {report['documents_indexed']} multi-page PDFs ({report['chunks_indexed']} chunks)\n"
-        f"- **PyTorch NLI Contradiction Model:** Test Accuracy = **{nli_metrics['test_accuracy']}**, Macro-F1 = **{nli_metrics['test_macro_f1']}** (1,500 pairs)\n"
+        f"- **Ingested PDFs:** {report['documents_indexed']} multi-page PDFs ({report['chunks_indexed']} chunks in Qdrant + BM25 RRF)\n"
+        f"- **PyTorch NLI Contradiction Model (`ContractNLI` + `MNLI` holdout, N={nli_metrics.get('test_pairs')}):** "
+        f"Test Accuracy = **{nli_metrics['test_accuracy']}**, Macro-F1 = **{nli_metrics['test_macro_f1']}** "
+        f"(ContractNLI-only Acc = **{nli_metrics.get('contractnli_test_accuracy')}**)\n"
         f"- **Authoritative Doc Recall:** **{report['authoritative_doc_recall_pct']}%**\n"
         f"- **Contradiction Detection Rate:** **{report['contradiction_detection_rate_pct']}%**\n"
         f"- **Distractor Rejection Rate:** **{report['distractor_rejection_rate_pct']}%**\n"

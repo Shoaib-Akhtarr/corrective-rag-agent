@@ -4,9 +4,14 @@
     "chunks_indexed": 12
   },
   "pytorch_nli_model": {
-    "test_accuracy": 1.0,
-    "test_macro_f1": 1.0,
-    "total_pairs": 1500
+    "datasets": [
+      "kiddothe2b/contract-nli (contractnli_a)",
+      "nyu-mll/multi_nli (promptID-disjoint split)"
+    ],
+    "test_pairs": 3945,
+    "test_accuracy": 0.6383,
+    "test_macro_f1": 0.6321,
+    "contractnli_test_accuracy": 0.7906
   },
   "claim_diff_rag_benchmark": {
     "documents_indexed": 8,
@@ -16,6 +21,6 @@
     "contradiction_detection_rate_pct": 100.0,
     "distractor_rejection_rate_pct": 100.0,
     "grounding_faithfulness_pct": 100.0,
-    "avg_latency_ms": 124.54
+    "avg_latency_ms": 1891.55
   }
 }

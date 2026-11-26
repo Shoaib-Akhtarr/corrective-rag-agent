@@ -1,48 +1,45 @@
 {
-  "model": "TfidfVectorizer + LogisticRegression (balanced)",
-  "total_samples": 50,
-  "signal_docs": 35,
-  "distractor_docs": 15,
-  "cv_5fold_accuracy_mean": 0.72,
-  "cv_5fold_accuracy_std": 0.04,
-  "cv_5fold_f1_mean": 0.8338,
-  "train_accuracy": 1.0,
-  "train_f1": 1.0,
+  "model": "StandardScaler + LogisticRegression Pairwise Query-Chunk Relevance Grader (7 features)",
+  "total_query_chunk_pairs": 84,
+  "relevant_pairs": 21,
+  "distractor_pairs": 63,
+  "group_kfold_4fold_accuracy": 0.9167,
+  "group_kfold_4fold_f1": 0.8372,
   "confusion_matrix": [
     [
-      15,
-      0
+      59,
+      4
     ],
     [
-      0,
-      35
+      3,
+      18
     ]
   ],
   "classification_report": {
-    "distractor": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1-score": 1.0,
-      "support": 15.0
+    "irrelevant": {
+      "precision": 0.9516129032258065,
+      "recall": 0.9365079365079365,
+      "f1-score": 0.944,
+      "support": 63.0
     },
-    "signal": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1-score": 1.0,
-      "support": 35.0
+    "relevant": {
+      "precision": 0.8181818181818182,
+      "recall": 0.8571428571428571,
+      "f1-score": 0.8372093023255814,
+      "support": 21.0
     },
-    "accuracy": 1.0,
+    "accuracy": 0.9166666666666666,
     "macro avg": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1-score": 1.0,
-      "support": 50.0
+      "precision": 0.8848973607038124,
+      "recall": 0.8968253968253967,
+      "f1-score": 0.8906046511627908,
+      "support": 84.0
     },
     "weighted avg": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1-score": 1.0,
-      "support": 50.0
+      "precision": 0.9182551319648095,
+      "recall": 0.9166666666666666,
+      "f1-score": 0.9173023255813952,
+      "support": 84.0
     }
   },
   "artifact_path": "artifacts/distractor_grader.joblib"

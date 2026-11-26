@@ -6,11 +6,12 @@ import streamlit as st
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app.graph.crag_workflow import crag_agent
+from app.llm.client import llm_gateway
 from app.retrieval.hybrid_index import hybrid_index
 
 st.set_page_config(page_title="Temporal Claim-Diff RAG", page_icon="⏳", layout="wide")
 st.title("⏳ Temporal & Contradiction-Aware Claim-Diff RAG")
-st.caption("Real PDF/MD/TXT Ingestion · PyTorch Neural NLI Contradiction Detection · Authority + Date Conflict Resolution")
+st.caption("LangGraph + Qdrant Hybrid Search + Real ContractNLI PyTorch NLI + Constrained LLM Telemetry")
 
 with st.sidebar:
     st.header("Ingest Real Documents")
@@ -18,11 +19,13 @@ with st.sidebar:
     if uploaded:
         for uf in uploaded:
             added = hybrid_index.ingest_bytes(uf.name, uf.read())
-            st.success(f"Indexed `{uf.name}` ({added} chunks)")
+            st.success(f"Indexed `{uf.name}` ({added} chunks into Qdrant)")
 
-    docs_count = len({c["doc_id"] for c in hybrid_index.chunks})
-    st.metric("Documents Indexed", docs_count)
+    llm_cfg = llm_gateway.resolve_provider()
+    st.metric("Documents Indexed", len({c["doc_id"] for c in hybrid_index.chunks}))
     st.metric("Total Page Chunks", len(hybrid_index.chunks))
+    st.caption(f"Qdrant: `{hybrid_index.qdrant_mode}` | Embedder: `{hybrid_index.embedder.backend_name}`")
+    st.caption(f"LLM: `{llm_cfg['provider']}` / `{llm_cfg['model']}`")
 
 presets = [
     "What is the current default vector storage layer in eu-central-2, and which earlier policy did it supersede?",
@@ -36,19 +39,22 @@ query = st.text_area("Query across ingested documents:", value=chosen, height=80
 if st.button("Run Claim-Diff Pipeline", type="primary"):
     state = crag_agent.run(query)
     diff = state["claim_diff"]
+    trace = state.get("llm_trace", {})
 
-    c1, c2, c3, c4 = st.columns(4)
+    c1, c2, c3, c4, c5 = st.columns(5)
     c1.metric("Verified Chunks", len(state["graded_docs"]))
     c2.metric("Distractors Rejected", len(state["rejected_distractors"]))
-    c3.metric("Contradictions Resolved", diff["contradictions_detected"])
+    c3.metric("Contradictions Resolved", diff.get("contradictions_detected", 0))
     c4.metric("Grounded", "YES" if state["is_grounded"] else "NO")
+    c5.metric("LLM Tokens", trace.get("total_tokens", 0))
 
     st.markdown(state["draft_answer"])
 
-    if diff["claim_lineage_diff"]:
+    if diff.get("claim_lineage_diff"):
         st.subheader("Claim Lineage Diff (Truth-Decay Audit)")
         st.dataframe(pd.DataFrame(diff["claim_lineage_diff"]), use_container_width=True)
 
-    with st.expander("Pipeline Audit Trail"):
+    with st.expander("LLM & LangGraph Telemetry Audit Trail"):
+        st.json(trace)
         for step in state["audit_trail"]:
             st.code(step, language="text")
